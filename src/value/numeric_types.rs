@@ -36,7 +36,7 @@ pub trait EvalexprNumericTypes: 'static + Sized + Debug + Clone + PartialEq {
 
 /// An integer type that can be used by `evalexpr`.
 pub trait EvalexprInt<NumericTypes: EvalexprNumericTypes<Int = Self>>:
-    Clone + Debug + Display + FromStr + Eq + Ord
+    Clone + Debug + Display + FromStr + Eq + Ord + Send + Sync
 {
     /// The minimum value of the integer type.
     const MIN: Self;
@@ -109,6 +109,8 @@ pub trait EvalexprFloat<NumericTypes: EvalexprNumericTypes<Float = Self>>:
     + Mul<Output = Self>
     + Div<Output = Self>
     + Rem<Output = Self>
+    + Send 
+    + Sync
 {
     /// The smallest non-NaN floating point value.
     ///

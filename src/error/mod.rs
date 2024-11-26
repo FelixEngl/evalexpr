@@ -270,11 +270,11 @@ pub enum EvalexprError<NumericTypes: EvalexprNumericTypes = DefaultNumericTypes>
 
 /// A simple wrapper around a struct.
 #[derive(Debug, Clone)]
-pub struct ErrorWrapper(pub Arc<Box<dyn Error>>);
+pub struct ErrorWrapper(pub Arc<Box<dyn Error + Send + Sync + 'static>>);
 
 impl ErrorWrapper {
     /// Wrap an error
-    pub fn wrap<T: Error + 'static>(err: T) -> ErrorWrapper {
+    pub fn wrap<T: Error + Send + Sync + 'static>(err: T) -> ErrorWrapper {
         ErrorWrapper(Arc::new(Box::new(err) as _))
     }
 }
@@ -300,7 +300,7 @@ impl PartialEq for ErrorWrapper {
 impl<NumericTypes: EvalexprNumericTypes> EvalexprError<NumericTypes> {
     
     /// Wraps an error to anonymize the message.
-    pub fn wrap<T: Error + 'static>(err: T) -> EvalexprError<NumericTypes> {
+    pub fn wrap<T: Error + Send + Sync + 'static>(err: T) -> EvalexprError<NumericTypes> {
         EvalexprError::Wrapped {
             wrapped: ErrorWrapper::wrap(err)
         }
