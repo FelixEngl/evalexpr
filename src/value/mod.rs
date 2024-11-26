@@ -3,11 +3,13 @@ use std::{convert::TryFrom, ops::RangeInclusive};
 use self::numeric_types::{DefaultNumericTypes, EvalexprNumericTypes};
 
 #[cfg(feature = "num")]
-use crate::value::num_ext::{EvalexprNumCast, 
-                            EvalexprNumericTypesCast, 
-                            EvalexprNumericTypesWithCopy, 
-                            EvalexprNumericTypesConvert,
-                            EvalexprAsPrimitive};
+use crate::value::num_ext::{
+    EvalexprNumCast, 
+    EvalexprNumericTypesWithCopy, 
+    EvalexprNumericTypesConvert,
+    EvalexprAsPrimitive
+};
+
 
 #[cfg(feature = "num")]
 pub mod num_ext;
@@ -296,35 +298,35 @@ impl<NumericTypesA> Value<NumericTypesA> where NumericTypesA: EvalexprNumericTyp
     }
 }
 
-#[cfg(feature = "num")]
-impl<NumericTypes> Value<NumericTypes> where NumericTypes: EvalexprNumericTypesCast<DefaultNumericTypes>
-{
-    /// Try to convert a numeric value type
-    pub fn to_default(self) -> Value {
-        match self {
-            Value::String(value) => Value::String(value),
-            Value::Float(value) => Value::Float(value.as_()),
-            Value::Int(value) => Value::Int(value.as_()),
-            Value::Boolean(value) => Value::Boolean(value),
-            Value::Tuple(value) => Value::Tuple(value.into_iter().map(|value| value.to_default()).collect()),
-            Value::Empty => Value::Empty,
-        }
-    }
-}
+// #[cfg(feature = "num")]
+// impl<NumericTypes> Value<NumericTypes> where NumericTypes: EvalexprNumericTypesCast<DefaultNumericTypes>
+// {
+//     /// Try to convert a numeric value type
+//     pub fn to_default(self) -> Value {
+//         match self {
+//             Value::String(value) => Value::String(value),
+//             Value::Float(value) => Value::Float(value.as_()),
+//             Value::Int(value) => Value::Int(value.as_()),
+//             Value::Boolean(value) => Value::Boolean(value),
+//             Value::Tuple(value) => Value::Tuple(value.into_iter().map(|value| value.to_default()).collect()),
+//             Value::Empty => Value::Empty,
+//         }
+//     }
+// }
 
-#[cfg(feature = "num")]
-impl<NumericTypeA> Value<NumericTypeA>
-    where NumericTypeA: EvalexprNumericTypesWithCopy
-{
-    /// Try to convert a numeric value type
-    pub fn to_<NumericTypeB>(self) -> Value<NumericTypeB>
-    where
-        NumericTypeA: EvalexprNumericTypesCast<NumericTypeB>,
-        NumericTypeB: EvalexprNumericTypesWithCopy,
-    {
-        cast(self)
-    }
-}
+// #[cfg(feature = "num")]
+// impl<NumericTypeA> Value<NumericTypeA>
+//     where NumericTypeA: EvalexprNumericTypesWithCopy
+// {
+//     /// Try to convert a numeric value type
+//     pub fn to_<NumericTypeB>(self) -> Value<NumericTypeB>
+//     where
+//         NumericTypeA: EvalexprNumericTypesCast<NumericTypeB>,
+//         NumericTypeB: EvalexprNumericTypesWithCopy,
+//     {
+//         cast(self)
+//     }
+// }
 
 #[cfg(feature = "num")]
 /// Converts a `value` to another type
@@ -362,22 +364,22 @@ where
     }
 }
 
-#[cfg(feature = "num")]
-/// Converts a `value` to another type
-pub fn cast<NumericTypesA, NumericTypesB>(value: Value<NumericTypesA>) -> Value<NumericTypesB>
-where
-    NumericTypesA: EvalexprNumericTypesCast<NumericTypesB>,
-    NumericTypesB: EvalexprNumericTypesWithCopy,
-{
-    match value {
-        Value::String(value) => Value::String(value.clone()),
-        Value::Float(value) => Value::Float(value.as_()),
-        Value::Int(value) => Value::Int(value.as_()),
-        Value::Boolean(value) => Value::Boolean(value),
-        Value::Tuple(value) => Value::Tuple(value.into_iter().map(cast).collect::<Vec<_>>()),
-        Value::Empty => Value::Empty,
-    }
-}
+// #[cfg(feature = "num")]
+// /// Converts a `value` to another type
+// pub fn cast<NumericTypesA, NumericTypesB>(value: Value<NumericTypesA>) -> Value<NumericTypesB>
+// where
+//     NumericTypesA: EvalexprNumericTypesCast<NumericTypesB>,
+//     NumericTypesB: EvalexprNumericTypesWithCopy,
+// {
+//     match value {
+//         Value::String(value) => Value::String(value.clone()),
+//         Value::Float(value) => Value::Float(value.as_()),
+//         Value::Int(value) => Value::Int(value.as_()),
+//         Value::Boolean(value) => Value::Boolean(value),
+//         Value::Tuple(value) => Value::Tuple(value.into_iter().map(cast).collect::<Vec<_>>()),
+//         Value::Empty => Value::Empty,
+//     }
+// }
 
 
 #[cfg(test)]

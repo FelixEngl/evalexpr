@@ -579,7 +579,7 @@
 pub use crate::{
     context::{
         Context, ContextWithMutableFunctions, ContextWithMutableVariables, EmptyContext,
-        EmptyContextWithBuiltinFunctions, HashMapContext, IterateVariablesContext,
+        EmptyContextWithBuiltinFunctions, HashMapContext, IterateVariablesContext
     },
     error::{EvalexprError, EvalexprResult},
     function::Function,
@@ -597,9 +597,12 @@ pub use crate::{
 #[cfg(feature = "num")]
 pub use crate::{
     value::{
-        cast,
+        try_convert,
         num_ext::*,
     },
+    context::{
+        ConvertibleContext
+    }
 };
 
 mod context;

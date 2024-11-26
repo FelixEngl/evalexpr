@@ -93,11 +93,14 @@ pub trait IterateVariablesContext: Context {
 /// The context allows a conversion of its numeric types
 pub trait ConvertibleContext: Context<NumericTypes=Self::ConvertibleNumericTypes>
 {
+    /// the type
     type ConvertibleNumericTypes: crate::value::num_ext::EvalexprNumericTypesConvert;
-    fn try_convert_to<C, N>(&self) -> EvalexprResult<C, Self::ConvertibleNumericTypes>
+    
+    /// tzry to convert to a 
+    fn try_convert_to<C>(&self) -> EvalexprResult<C, Self::ConvertibleNumericTypes>
     where
-        C: Default + Context<NumericTypes=N> + ContextWithMutableVariables + ContextWithMutableFunctions,
-        N: crate::value::num_ext::EvalexprNumericTypesConvert,
+        C: Default + Context + ContextWithMutableVariables + ContextWithMutableFunctions,
+        <C as Context>::NumericTypes: crate::value::num_ext::EvalexprNumericTypesConvert,
     ;
 }
 
@@ -169,10 +172,10 @@ impl<NumericTypes: crate::value::num_ext::EvalexprNumericTypesConvert> Convertib
 {
     type ConvertibleNumericTypes = Self::NumericTypes;
 
-    fn try_convert_to<C, N>(&self) -> EvalexprResult<C, Self::ConvertibleNumericTypes>
+    fn try_convert_to<C>(&self) -> EvalexprResult<C, Self::ConvertibleNumericTypes>
     where
-        C: Default + Context<NumericTypes=N> + ContextWithMutableVariables + ContextWithMutableFunctions,
-        N: crate::value::num_ext::EvalexprNumericTypesConvert
+        C: Default + Context + ContextWithMutableVariables + ContextWithMutableFunctions,
+        <C as Context>::NumericTypes: crate::value::num_ext::EvalexprNumericTypesConvert,
     {
         let mut new = C::default();
         // We do not care if it fails. This is only to make sure that we copy it if necessary. 
@@ -251,10 +254,10 @@ impl<NumericTypes: crate::value::num_ext::EvalexprNumericTypesConvert> Convertib
 {
     type ConvertibleNumericTypes = Self::NumericTypes;
 
-    fn try_convert_to<C, N>(&self) -> EvalexprResult<C, Self::ConvertibleNumericTypes>
+    fn try_convert_to<C>(&self) -> EvalexprResult<C, Self::ConvertibleNumericTypes>
     where
-        C: Default + Context<NumericTypes=N> + ContextWithMutableVariables + ContextWithMutableFunctions,
-        N: crate::value::num_ext::EvalexprNumericTypesConvert
+        C: Default + Context + ContextWithMutableVariables + ContextWithMutableFunctions,
+        <C as Context>::NumericTypes: crate::value::num_ext::EvalexprNumericTypesConvert,
     {
         let mut new = C::default();
         // We do not care if it fails. This is only to make sure that we copy it if necessary. 
@@ -430,28 +433,28 @@ impl<NumericTypes: crate::value::num_ext::EvalexprNumericTypesConvert> Convertib
 {
     type ConvertibleNumericTypes = Self::NumericTypes;
 
-    fn try_convert_to<C, N>(&self) -> EvalexprResult<C, Self::ConvertibleNumericTypes>
+    fn try_convert_to<C>(&self) -> EvalexprResult<C, Self::ConvertibleNumericTypes>
     where
-        C: Default + Context<NumericTypes=N> + ContextWithMutableVariables + ContextWithMutableFunctions,
-        N: crate::value::num_ext::EvalexprNumericTypesConvert
+        C: Default + Context + ContextWithMutableVariables + ContextWithMutableFunctions,
+        <C as Context>::NumericTypes: crate::value::num_ext::EvalexprNumericTypesConvert,
     {
         let mut new = C::default();
         // We do not care if it fails. This is only to make sure that we copy it if necessary. 
         let _ = new.set_builtin_functions_disabled(self.are_builtin_functions_disabled());
         for (k, v) in self.variables.iter() {
-            new.set_value(k.clone(), v.try_as_::<N>()?).unwrap()
+            new.set_value(k.clone(), v.try_as_::<<C as Context>::NumericTypes>()?).unwrap()
         }
         for (k, v) in self.functions.iter() {
             let function_clone = v.clone();
             let new_f = Function::new(
-                move |value: &Value<N>| {
+                move |value: &Value<<C as Context>::NumericTypes>| {
                     value.try_as_::<NumericTypes>()
                         .and_then(|v| {
                             function_clone
                                 .call(&v)
-                                .and_then(|res| res.try_as_::<N>())
+                                .and_then(|res| res.try_as_::<<C as Context>::NumericTypes>())
                                 .map_err(|err| {
-                                    EvalexprError::<N>::wrap(err)
+                                    EvalexprError::<<C as Context>::NumericTypes>::wrap(err)
                                 })
                         })
                 }
