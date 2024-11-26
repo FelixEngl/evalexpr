@@ -498,6 +498,8 @@ macro_rules! context_map {
         { $crate::context_map!(($ctx) $k => int $v,)  };
     ( ($ctx:expr) $k:expr => float $v:expr ) =>
         { $crate::context_map!(($ctx) $k => float $v,)  };
+    ( ($ctx:expr) $k:expr => conv $v:expr ) => 
+        { $crate::context_map!(($ctx) $k => conv $v,)  };
     ( ($ctx:expr) $k:expr => $v:expr ) =>
         { $crate::context_map!(($ctx) $k => $v,)  };
     // Termination
