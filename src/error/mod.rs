@@ -340,7 +340,7 @@ impl<NumericTypes: EvalexprNumericTypes> EvalexprError<NumericTypes> {
     }
 
     /// Constructs an error that expresses that the type of `expected` was expected, but `actual` was found.
-    pub(crate) fn expected_type(
+    pub fn expected_type(
         expected: &Value<NumericTypes>,
         actual: Value<NumericTypes>,
     ) -> Self {
