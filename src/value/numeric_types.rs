@@ -10,7 +10,7 @@ use crate::{EvalexprError, EvalexprResult, Value};
 /// A trait to parameterise `evalexpr` with an int type and a float type.
 ///
 /// See [`EvalexprInt`] and [`EvalexprFloat`] for the requirements on the types.
-pub trait EvalexprNumericTypes: 'static + Sized + Debug + Clone + PartialEq {
+pub trait EvalexprNumericTypes: 'static + Sized + Debug + Clone + PartialEq + Sync + Send {
     /// The integer type.
     #[cfg(feature = "serde")]
     type Int: EvalexprInt<Self> + serde::Serialize + for<'de> serde::Deserialize<'de>;
