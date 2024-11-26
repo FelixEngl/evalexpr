@@ -585,12 +585,20 @@ pub use crate::{
     function::Function,
     interface::*,
     operator::Operator,
-    token::{PartialToken, Token},
+    token::{PartialToken},
     tree::Node,
     value::{
         numeric_types::{DefaultNumericTypes, EvalexprFloat, EvalexprInt, EvalexprNumericTypes},
         value_type::ValueType,
         EmptyType, TupleType, Value, EMPTY_VALUE,
+    },
+};
+
+#[cfg(feature = "num")]
+pub use crate::{
+    value::{
+        cast,
+        num_ext::*,
     },
 };
 

@@ -151,6 +151,9 @@ impl<NumericTypes: EvalexprNumericTypes> fmt::Display for EvalexprError<NumericT
             ),
             RandNotEnabled => write!(f, "The feature 'rand' must be enabled to use randomness"),
             CustomMessage(message) => write!(f, "Error: {}", message),
+            FloatToNum{float, target_type} => write!(f, "Cannot convert {float} to {target_type}"),
+            IntToNum {int, target_type} => write!(f, "Cannot convert {int} to {target_type}"),
+            Wrapped {wrapped} => write!(f, "Encountered an error: {wrapped}"),
         }
     }
 }

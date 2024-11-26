@@ -1,4 +1,4 @@
-#[cfg(feature = "regex")]
+ #[cfg(feature = "regex")]
 use regex::Regex;
 
 use crate::{

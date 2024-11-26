@@ -5,8 +5,10 @@
 //! The module also contains some helper functions starting with `expect_` that check for a condition and return `Err(_)` if the condition is not fulfilled.
 //! They are meant as shortcuts to not write the same error checking code everywhere.
 
+use std::error::Error;
+use std::fmt::{Debug, Display, Formatter};
 use std::ops::RangeInclusive;
-
+use std::sync::Arc;
 use crate::value::numeric_types::{DefaultNumericTypes, EvalexprNumericTypes};
 use crate::{token::PartialToken, value::value_type::ValueType};
 
@@ -243,9 +245,67 @@ pub enum EvalexprError<NumericTypes: EvalexprNumericTypes = DefaultNumericTypes>
 
     /// A custom error explained by its message.
     CustomMessage(String),
+    
+    /// Failed to convert an `int` to `target_type`
+    IntToNum {
+        /// The `int` that was attempted to be converted.
+        int: NumericTypes::Int,
+        /// The `target_type` of the conversion.
+        target_type: &'static str
+    },
+
+    /// Failed to convert a `float` to `target_type`
+    FloatToNum {
+        /// The `float` that was attempted to be converted.
+        float: NumericTypes::Float,
+        /// The `target_type` of the conversion.
+        target_type: &'static str
+    },
+    /// An error that is dynamically wrapped due to some reasons
+    Wrapped {
+        /// The wrapped error
+        wrapped: ErrorWrapper
+    }
 }
 
+/// A simple wrapper around a struct.
+#[derive(Debug, Clone)]
+pub struct ErrorWrapper(pub Arc<Box<dyn Error>>);
+
+impl ErrorWrapper {
+    /// Wrap an error
+    pub fn wrap<T: Error + 'static>(err: T) -> ErrorWrapper {
+        ErrorWrapper(Arc::new(Box::new(err) as _))
+    }
+}
+
+impl Display for ErrorWrapper {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        Display::fmt(&self.0, f)
+    }
+}
+
+impl Error for ErrorWrapper {}
+
+impl PartialEq for ErrorWrapper {
+    fn eq(&self, other: &Self) -> bool {
+        self.0.to_string() == other.0.to_string()
+    }
+}
+
+
+
+
+
 impl<NumericTypes: EvalexprNumericTypes> EvalexprError<NumericTypes> {
+    
+    /// Wraps an error to anonymize the message.
+    pub fn wrap<T: Error + 'static>(err: T) -> EvalexprError<NumericTypes> {
+        EvalexprError::Wrapped {
+            wrapped: ErrorWrapper::wrap(err)
+        }
+    }
+    
     /// Construct a `WrongOperatorArgumentAmount` error.
     pub fn wrong_operator_argument_amount(actual: usize, expected: usize) -> Self {
         EvalexprError::WrongOperatorArgumentAmount { actual, expected }

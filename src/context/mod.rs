@@ -17,6 +17,7 @@ use crate::{
     EvalexprError, EvalexprResult,
 };
 
+
 mod predefined;
 
 /// An immutable context.
@@ -88,6 +89,19 @@ pub trait IterateVariablesContext: Context {
     fn iter_variable_names(&self) -> Self::VariableNameIterator<'_>;
 }
 
+#[cfg(feature = "num")]
+/// The context allows a conversion of its numeric types
+pub trait ConvertibleContext: Context<NumericTypes=Self::ConvertibleNumericTypes>
+{
+    type ConvertibleNumericTypes: crate::value::num_ext::EvalexprNumericTypesConvert;
+    fn try_convert_to<C, N>(&self) -> EvalexprResult<C, Self::ConvertibleNumericTypes>
+    where
+        C: Default + Context<NumericTypes=N> + ContextWithMutableVariables + ContextWithMutableFunctions,
+        N: crate::value::num_ext::EvalexprNumericTypesConvert,
+    ;
+}
+
+
 /*/// A context that allows to retrieve functions programmatically.
 pub trait GetFunctionContext: Context {
     /// Returns the function that is linked to the given identifier.
@@ -149,6 +163,25 @@ impl<NumericTypes: EvalexprNumericTypes> IterateVariablesContext for EmptyContex
         iter::empty()
     }
 }
+
+#[cfg(feature = "num")]
+impl<NumericTypes: crate::value::num_ext::EvalexprNumericTypesConvert> ConvertibleContext for EmptyContext<NumericTypes>
+{
+    type ConvertibleNumericTypes = Self::NumericTypes;
+
+    fn try_convert_to<C, N>(&self) -> EvalexprResult<C, Self::ConvertibleNumericTypes>
+    where
+        C: Default + Context<NumericTypes=N> + ContextWithMutableVariables + ContextWithMutableFunctions,
+        N: crate::value::num_ext::EvalexprNumericTypesConvert
+    {
+        let mut new = C::default();
+        // We do not care if it fails. This is only to make sure that we copy it if necessary. 
+        let _ = new.set_builtin_functions_disabled(self.are_builtin_functions_disabled());
+        Ok(new)
+    }
+}
+
+
 
 impl<NumericTypes> Default for EmptyContext<NumericTypes> {
     fn default() -> Self {
@@ -212,6 +245,24 @@ impl<NumericTypes: EvalexprNumericTypes> IterateVariablesContext
         iter::empty()
     }
 }
+
+#[cfg(feature = "num")]
+impl<NumericTypes: crate::value::num_ext::EvalexprNumericTypesConvert> ConvertibleContext for EmptyContextWithBuiltinFunctions<NumericTypes>
+{
+    type ConvertibleNumericTypes = Self::NumericTypes;
+
+    fn try_convert_to<C, N>(&self) -> EvalexprResult<C, Self::ConvertibleNumericTypes>
+    where
+        C: Default + Context<NumericTypes=N> + ContextWithMutableVariables + ContextWithMutableFunctions,
+        N: crate::value::num_ext::EvalexprNumericTypesConvert
+    {
+        let mut new = C::default();
+        // We do not care if it fails. This is only to make sure that we copy it if necessary. 
+        let _ = new.set_builtin_functions_disabled(self.are_builtin_functions_disabled());
+        Ok(new)
+    }
+}
+
 
 impl<NumericTypes> Default for EmptyContextWithBuiltinFunctions<NumericTypes> {
     fn default() -> Self {
@@ -371,6 +422,43 @@ impl<NumericTypes: EvalexprNumericTypes> IterateVariablesContext for HashMapCont
 
     fn iter_variable_names(&self) -> Self::VariableNameIterator<'_> {
         self.variables.keys().cloned()
+    }
+}
+
+#[cfg(feature = "num")]
+impl<NumericTypes: crate::value::num_ext::EvalexprNumericTypesConvert> ConvertibleContext for HashMapContext<NumericTypes>
+{
+    type ConvertibleNumericTypes = Self::NumericTypes;
+
+    fn try_convert_to<C, N>(&self) -> EvalexprResult<C, Self::ConvertibleNumericTypes>
+    where
+        C: Default + Context<NumericTypes=N> + ContextWithMutableVariables + ContextWithMutableFunctions,
+        N: crate::value::num_ext::EvalexprNumericTypesConvert
+    {
+        let mut new = C::default();
+        // We do not care if it fails. This is only to make sure that we copy it if necessary. 
+        let _ = new.set_builtin_functions_disabled(self.are_builtin_functions_disabled());
+        for (k, v) in self.variables.iter() {
+            new.set_value(k.clone(), v.try_as_::<N>()?).unwrap()
+        }
+        for (k, v) in self.functions.iter() {
+            let function_clone = v.clone();
+            let new_f = Function::new(
+                move |value: &Value<N>| {
+                    value.try_as_::<NumericTypes>()
+                        .and_then(|v| {
+                            function_clone
+                                .call(&v)
+                                .and_then(|res| res.try_as_::<N>())
+                                .map_err(|err| {
+                                    EvalexprError::<N>::wrap(err)
+                                })
+                        })
+                }
+            );
+            new.set_function(k.clone(), new_f).unwrap()
+        }
+        Ok(new)
     }
 }
 

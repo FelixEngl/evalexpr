@@ -45,7 +45,7 @@ where
 /// assert_eq!(eval_with_context("id(4)", &context), Ok(Value::from_int(4)));
 /// ```
 pub struct Function<NumericTypes: EvalexprNumericTypes> {
-    function: Box<dyn ClonableFn<NumericTypes>>,
+    function: Box<dyn ClonableFn<NumericTypes>>
 }
 
 impl<NumericTypes: EvalexprNumericTypes> Clone for Function<NumericTypes> {
@@ -70,7 +70,8 @@ impl<NumericTypes: EvalexprNumericTypes> Function<NumericTypes> {
             function: Box::new(function) as _,
         }
     }
-
+    
+    /// Calls the method with the arguments.
     pub fn call(&self, argument: &Value<NumericTypes>) -> EvalexprResultValue<NumericTypes> {
         (self.function)(argument)
     }
