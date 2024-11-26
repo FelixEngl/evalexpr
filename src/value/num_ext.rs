@@ -123,7 +123,7 @@ where
 
     /// The integer type.
     #[cfg(not(feature = "serde"))]
-    type IntAs: EvalexprInt<Self> + EvalexprAsPrimitive<T> + Copy;
+    type IntAs: EvalexprInt<Self> + EvalexprAsPrimitive<NumericType> + Copy;
 
     /// Casts an `int` to `T`
     fn cast_int_to(int: Self::IntAs) -> NumericType::Int {
@@ -142,7 +142,7 @@ where
 
     /// The integer type.
     #[cfg(not(feature = "serde"))]
-    type FloatAs: EvalexprFloat<Self> + EvalexprAsPrimitive<T> + Copy;
+    type FloatAs: EvalexprFloat<Self> + EvalexprAsPrimitive<NumericType> + Copy;
 
     /// Casts an `int` to `T`
     fn cast_float_to(int: Self::FloatAs) -> NumericType::Float {
