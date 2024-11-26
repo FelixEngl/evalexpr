@@ -214,6 +214,8 @@ impl_convertible! {
     int i64;
     int u128;
     int i128;
+    int usize;
+    int isize;
     float f32;
     float f64;
 }
