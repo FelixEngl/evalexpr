@@ -4,8 +4,8 @@ use self::numeric_types::{DefaultNumericTypes, EvalexprNumericTypes};
 
 #[cfg(feature = "num")]
 use crate::value::num_ext::{
-    EvalexprNumCast, 
-    EvalexprNumericTypesWithCopy, 
+    EvalexprNumCast,
+    EvalexprNumericTypesWithCopy,
     EvalexprNumericTypesConvert,
     EvalexprAsPrimitive
 };
