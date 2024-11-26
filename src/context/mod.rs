@@ -515,7 +515,10 @@ macro_rules! context_map {
     }};
     // add an integer value, and chain the eventual error with the ones in the next values
     ( ($ctx:expr) $k:expr => conv $v:expr , $($tt:tt)*) => {{
-        $crate::ContextWithMutableVariables::set_value($ctx, $k.into(), $v.into_with().expect("This should not fail!"))
+        use $crate::ConvertibleWithEvalexprNumericTypes;
+
+        $v.into_with().ok_or_else(|| $crate::error::EvalexprError::CustomMessage(format!("Non convertible value detected!")))
+            .and_then(|value| $crate::ContextWithMutableVariables::set_value($ctx, $k.into(), value))
             .and($crate::context_map!(($ctx) $($tt)*))
     }};
     // add a float value, and chain the eventual error with the ones in the next values
