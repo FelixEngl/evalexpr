@@ -585,7 +585,7 @@ pub use crate::{
     function::Function,
     interface::*,
     operator::Operator,
-    token::PartialToken,
+    token::{PartialToken, Token},
     tree::Node,
     value::{
         numeric_types::{DefaultNumericTypes, EvalexprFloat, EvalexprInt, EvalexprNumericTypes},
