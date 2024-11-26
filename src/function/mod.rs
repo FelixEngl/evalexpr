@@ -71,7 +71,7 @@ impl<NumericTypes: EvalexprNumericTypes> Function<NumericTypes> {
         }
     }
 
-    pub(crate) fn call(&self, argument: &Value<NumericTypes>) -> EvalexprResultValue<NumericTypes> {
+    pub fn call(&self, argument: &Value<NumericTypes>) -> EvalexprResultValue<NumericTypes> {
         (self.function)(argument)
     }
 }
