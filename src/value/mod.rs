@@ -231,7 +231,7 @@ impl<NumericTypes: EvalexprNumericTypesConvert> Value<NumericTypes> {
     where
         T: num_traits::NumCast
     {
-        match num_traits::cast(float) { 
+        match num_traits::cast(float) {
             Some(v) => Ok(Self::Float(v)),
             None => Err(EvalexprError::FloatCastError),
         }
