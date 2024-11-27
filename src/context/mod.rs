@@ -494,11 +494,12 @@ macro_rules! context_map {
     // Termination (allow missing comma at the end of the argument list)
     ( ($ctx:expr) $k:expr => Function::new($($v:tt)*) ) =>
         { $crate::context_map!(($ctx) $k => Function::new($($v)*),) };
-
-    ( ($ctx:expr) $k:expr => $tt:tt $v:expr ) =>
-        { $crate::context_map!(($ctx) $k => $tt $v,)  };
+    
     ( ($ctx:expr) $k:expr => $tt1:tt $tt2:tt $v:expr ) =>
         { $crate::context_map!(($ctx) $k => $tt1 $tt2 $v,)  };
+    ( ($ctx:expr) $k:expr => $tt:tt $v:expr ) =>
+        { $crate::context_map!(($ctx) $k => $tt $v,)  };
+
 
     ( ($ctx:expr) $k:expr => $v:expr ) =>
         { $crate::context_map!(($ctx) $k => $v,)  };
