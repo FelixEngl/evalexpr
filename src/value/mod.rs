@@ -204,17 +204,18 @@ impl<NumericTypes: EvalexprNumericTypes> Value<NumericTypes> {
     /// Create a new `Value` from a castable float-like type.
     pub fn from_as_float<T>(float: T) -> Self
     where
-        T: num_traits::AsPrimitive<NumericTypes::Float>,
+        T: num_traits::AsPrimitive<NumericTypes::Float> + num_traits::float::Float,
         NumericTypes::Float: Copy
     {
         Self::Float(float.as_())
     }
+    
 
     #[cfg(feature = "num")]
     /// Create a new `Value` from a castable int-like type.
     pub fn from_as_int<T>(int: T) -> Self
     where
-        T: num_traits::AsPrimitive<NumericTypes::Int>,
+        T: num_traits::AsPrimitive<NumericTypes::Int> + num_traits::int::PrimInt,
         NumericTypes::Int: Copy
     {
         Self::Int(int.as_())
@@ -225,7 +226,7 @@ impl<NumericTypes: EvalexprNumericTypes> Value<NumericTypes> {
 #[cfg(feature = "num")]
 impl<NumericTypes: EvalexprNumericTypesConvert> Value<NumericTypes> {
 
-    /// Cast a value to a float
+    /// Cast a value to a float.
     pub fn from_cast_float<T>(float: T) -> EvalexprResult<Self, NumericTypes>
     where
         T: num_traits::NumCast
