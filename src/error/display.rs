@@ -154,6 +154,8 @@ impl<NumericTypes: EvalexprNumericTypes> fmt::Display for EvalexprError<NumericT
             FloatToNum{float, target_type} => write!(f, "Cannot convert {float} to {target_type}"),
             IntToNum {int, target_type} => write!(f, "Cannot convert {int} to {target_type}"),
             Wrapped {wrapped} => write!(f, "Encountered an error: {wrapped}"),
+            IntCastError => write!(f, "Failed to cast an int to Value."),
+            FloatCastError => write!(f, "Failed to cast a float to Value."),
         }
     }
 }

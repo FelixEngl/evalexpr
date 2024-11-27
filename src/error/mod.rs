@@ -245,6 +245,12 @@ pub enum EvalexprError<NumericTypes: EvalexprNumericTypes = DefaultNumericTypes>
 
     /// A custom error explained by its message.
     CustomMessage(String),
+
+    /// Failed to cast a value to a float. 
+    FloatCastError,
+
+    /// Failed to cast a value to an int. 
+    IntCastError,
     
     /// Failed to convert an `int` to `target_type`
     IntToNum {

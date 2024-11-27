@@ -199,7 +199,54 @@ impl<NumericTypes: EvalexprNumericTypes> Value<NumericTypes> {
     pub fn from_int(int: NumericTypes::Int) -> Self {
         Self::Int(int)
     }
+
+    #[cfg(feature = "num")]
+    /// Create a new `Value` from a castable float-like type.
+    pub fn from_as_float<T>(float: T) -> Self
+    where
+        T: num_traits::AsPrimitive<NumericTypes::Float>,
+        NumericTypes::Float: Copy
+    {
+        Self::Float(float.as_())
+    }
+
+    #[cfg(feature = "num")]
+    /// Create a new `Value` from a castable int-like type.
+    pub fn from_as_int<T>(int: T) -> Self
+    where
+        T: num_traits::AsPrimitive<NumericTypes::Int>,
+        NumericTypes::Int: Copy
+    {
+        Self::Int(int.as_())
+    }
+
 }
+
+#[cfg(feature = "num")]
+impl<NumericTypes: EvalexprNumericTypesConvert> Value<NumericTypes> {
+
+    /// Cast a value to a float
+    pub fn from_cast_float<T>(float: T) -> EvalexprResult<Self, NumericTypes>
+    where
+        T: num_traits::NumCast
+    {
+        match num_traits::cast(float) { 
+            Some(v) => Ok(Self::Float(v)),
+            None => Err(EvalexprError::FloatCastError),
+        }
+    }
+
+    /// Cast a value to a int
+    pub fn from_cast_int<T>(int: T) -> EvalexprResult<Self, NumericTypes>
+    where
+        T: num_traits::NumCast
+    {
+        match num_traits::cast(int) {
+            Some(v) => Ok(Self::Int(v)),
+            None => Err(EvalexprError::IntCastError),
+        }
+    }
+} 
 
 impl<NumericTypes: EvalexprNumericTypes> From<String> for Value<NumericTypes> {
     fn from(string: String) -> Self {
@@ -298,35 +345,6 @@ impl<NumericTypesA> Value<NumericTypesA> where NumericTypesA: EvalexprNumericTyp
     }
 }
 
-// #[cfg(feature = "num")]
-// impl<NumericTypes> Value<NumericTypes> where NumericTypes: EvalexprNumericTypesCast<DefaultNumericTypes>
-// {
-//     /// Try to convert a numeric value type
-//     pub fn to_default(self) -> Value {
-//         match self {
-//             Value::String(value) => Value::String(value),
-//             Value::Float(value) => Value::Float(value.as_()),
-//             Value::Int(value) => Value::Int(value.as_()),
-//             Value::Boolean(value) => Value::Boolean(value),
-//             Value::Tuple(value) => Value::Tuple(value.into_iter().map(|value| value.to_default()).collect()),
-//             Value::Empty => Value::Empty,
-//         }
-//     }
-// }
-
-// #[cfg(feature = "num")]
-// impl<NumericTypeA> Value<NumericTypeA>
-//     where NumericTypeA: EvalexprNumericTypesWithCopy
-// {
-//     /// Try to convert a numeric value type
-//     pub fn to_<NumericTypeB>(self) -> Value<NumericTypeB>
-//     where
-//         NumericTypeA: EvalexprNumericTypesCast<NumericTypeB>,
-//         NumericTypeB: EvalexprNumericTypesWithCopy,
-//     {
-//         cast(self)
-//     }
-// }
 
 #[cfg(feature = "num")]
 /// Converts a `value` to another type
