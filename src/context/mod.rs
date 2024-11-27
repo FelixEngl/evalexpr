@@ -494,12 +494,12 @@ macro_rules! context_map {
     // Termination (allow missing comma at the end of the argument list)
     ( ($ctx:expr) $k:expr => Function::new($($v:tt)*) ) =>
         { $crate::context_map!(($ctx) $k => Function::new($($v)*),) };
-    
+
     ( ($ctx:expr) $k:expr => $tt:tt $v:expr ) =>
         { $crate::context_map!(($ctx) $k => $tt $v,)  };
     ( ($ctx:expr) $k:expr => $tt1:tt $tt2:tt $v:expr ) =>
         { $crate::context_map!(($ctx) $k => $tt1 $tt2 $v,)  };
-    
+
     ( ($ctx:expr) $k:expr => $v:expr ) =>
         { $crate::context_map!(($ctx) $k => $v,)  };
     // Termination
@@ -520,49 +520,33 @@ macro_rules! context_map {
         $crate::ContextWithMutableVariables::set_value($ctx, $k.into(), $crate::Value::from_float($v.into()))
             .and($crate::context_map!(($ctx) $($tt)*))
     }};
-    
-    
+
+
     // add an integer value, and chain the eventual error with the ones in the next values
     ( ($ctx:expr) $k:expr => as int $v:expr , $($tt:tt)*) => {{
-        if cfg!(feature = "num") {
-            $crate::ContextWithMutableVariables::set_value($ctx, $k.into(), $crate::Value::from_as_int($v))
+        $crate::ContextWithMutableVariables::set_value($ctx, $k.into(), $crate::Value::from_as_int($v))
                 .and($crate::context_map!(($ctx) $($tt)*))
-        } else {
-            panic!("The feature as int is not supported, activate 'num'!")
-        }
     }};
     // add a float value, and chain the eventual error with the ones in the next values
     ( ($ctx:expr) $k:expr => as float $v:expr , $($tt:tt)*) => {{
-         if cfg!(feature = "num") {
-             $crate::ContextWithMutableVariables::set_value($ctx, $k.into(), $crate::Value::from_as_float($v))
+         $crate::ContextWithMutableVariables::set_value($ctx, $k.into(), $crate::Value::from_as_float($v))
                 .and($crate::context_map!(($ctx) $($tt)*))
-         } else {
-             panic!("The feature as int is not supported, activate 'num'!")
-         }    
     }};
     // add an integer value, and chain the eventual error with the ones in the next values
     ( ($ctx:expr) $k:expr => cast int $v:expr , $($tt:tt)*) => {{
-        if cfg!(feature = "num") {
-            $crate::Value::from_cast_int($v).and_then(|value| 
+        $crate::Value::from_cast_int($v).and_then(|value|
                 $crate::ContextWithMutableVariables::set_value($ctx, $k.into(), )
                     .and($crate::context_map!(($ctx) $($tt)*))
             )
-        } else {
-            panic!("The feature as int is not supported, activate 'num'!")
-        }   
     }};
     // add a float value, and chain the eventual error with the ones in the next values
     ( ($ctx:expr) $k:expr => cast float $v:expr , $($tt:tt)*) => {{
-        if cfg!(feature = "num") {
-            $crate::Value::from_cast_float($v).and_then(|value| 
+        $crate::Value::from_cast_float($v).and_then(|value|
                 $crate::ContextWithMutableVariables::set_value($ctx, $k.into(), )
                     .and($crate::context_map!(($ctx) $($tt)*))
             )
-        } else {
-            panic!("The feature as int is not supported, activate 'num'!")
-        }
     }};
-    
+
     // add an converted value, and chain the eventual error with the ones in the next values
     ( ($ctx:expr) $k:expr => conv $v:expr , $($tt:tt)*) => {{
         use $crate::ConvertibleWithEvalexprNumericTypes;
@@ -571,7 +555,7 @@ macro_rules! context_map {
             .and_then(|value| $crate::ContextWithMutableVariables::set_value($ctx, $k.into(), value))
             .and($crate::context_map!(($ctx) $($tt)*))
     }};
-    
+
     // add a value, and chain the eventual error with the ones in the next values
     ( ($ctx:expr) $k:expr => $v:expr , $($tt:tt)*) => {{
         $crate::ContextWithMutableVariables::set_value($ctx, $k.into(), $v.into())
