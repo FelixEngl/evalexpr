@@ -14,9 +14,6 @@ cfg_if! {
     }
 }
 
-#[cfg(feature = "num_primitive")]
-use num_traits::*;
-
 mod display;
 
 /// An enum that represents operators in the operator tree.
