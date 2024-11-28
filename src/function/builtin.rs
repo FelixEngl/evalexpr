@@ -13,7 +13,7 @@ cfg_if! {
     if #[cfg(feature = "num_primitive")] {
         use num_traits::*;
         use std::ops::*;
-        
+
         macro_rules! simple_math {
             ($func:ident) => {
                 Some(Function::new(|argument: &Value<NumericTypes>| {
@@ -29,7 +29,7 @@ cfg_if! {
                 }))
             };
         }
-        
+
         macro_rules! int_function {
             ($func:ident) => {
                 Some(Function::new(|argument| {
@@ -46,7 +46,7 @@ cfg_if! {
                 }))
             };
         }
-        
+
         fn float_is<NumericTypes: EvalexprNumericTypes>(
             func: fn(NumericTypes::Float) -> bool,
         ) -> Option<Function<NumericTypes>> {
@@ -70,7 +70,7 @@ cfg_if! {
                 }))
             };
         }
-        
+
         macro_rules! int_function {
             ($func:ident) => {
                 Some(Function::new(|argument| {
@@ -172,8 +172,8 @@ pub fn builtin_function<NumericTypes: EvalexprNumericTypes>(
         })),
         "min" => Some(Function::new(|argument| {
             let arguments = argument.as_tuple()?;
-            let mut min_int = NumericTypes::Int::MAX;
-            let mut min_float = NumericTypes::Float::MAX;
+            let mut min_int = NumericTypes::Int::max_value();
+            let mut min_float = NumericTypes::Float::infinity();
             debug_assert!(min_float.is_infinite());
 
             for argument in arguments {
@@ -200,23 +200,25 @@ pub fn builtin_function<NumericTypes: EvalexprNumericTypes>(
         })),
         "max" => Some(Function::new(|argument| {
             let arguments = argument.as_tuple()?;
-            let mut max_int = NumericTypes::Int::MIN;
-            let mut max_float = NumericTypes::Float::MIN;
+            let mut max_int = NumericTypes::Int::min_value();
+            let mut max_float = NumericTypes::Float::neg_infinity();
             debug_assert!(max_float.is_infinite());
 
             for argument in arguments {
-                if let Value::Float(float) = argument {
-                    cfg_if! {
-                        if #[cfg(feature = "num_primitive")] {
-                            max_float = max_float.max(float);
-                        } else {
-                            max_float = max_float.max(&float);
+                match argument {
+                    Value::Float(float) => {
+                        cfg_if! {
+                            if #[cfg(feature = "num_primitive")] {
+                                max_float = max_float.max(float);
+                            } else {
+                                max_float = max_float.max(&float);
+                            }
                         }
                     }
-                } else if let Value::Int(int) = argument {
-                    max_int = max_int.max(int);
-                } else {
-                    return Err(EvalexprError::expected_number(argument));
+                    Value::Int(int) => {
+                        max_int = max_int.max(int);
+                    }
+                    _ => return Err(EvalexprError::expected_number(argument))
                 }
             }
 

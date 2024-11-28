@@ -11,10 +11,10 @@ pub trait EvalexprInt<NumericTypes: EvalexprNumericTypes<Int = Self>>:
 Clone + Debug + Display + FromStr + Eq + Ord + Send + Sync
 {
     /// The minimum value of the integer type.
-    const MIN: Self;
+    fn min_value() -> Self;
 
     /// The maximum value of the integer type.
-    const MAX: Self;
+    fn max_value() -> Self;
 
     /// Convert a value of type [`usize`] into `Self`.
     fn from_usize(int: usize) -> EvalexprResult<Self, NumericTypes>;
@@ -68,30 +68,30 @@ Clone + Debug + Display + FromStr + Eq + Ord + Send + Sync
 
 /// A float type that can be used by `evalexpr`.
 pub trait EvalexprFloat<NumericTypes: EvalexprNumericTypes<Float = Self>>:
-Clone
-+ Debug
-+ Display
-+ FromStr
-+ PartialEq
-+ PartialOrd
-+ Add<Output = Self>
-+ Sub<Output = Self>
-+ Neg<Output = Self>
-+ Mul<Output = Self>
-+ Div<Output = Self>
-+ Rem<Output = Self>
-+ Send
-+ Sync
+    Clone
+    + Debug
+    + Display
+    + FromStr
+    + PartialEq
+    + PartialOrd
+    + Add<Output = Self>
+    + Sub<Output = Self>
+    + Neg<Output = Self>
+    + Mul<Output = Self>
+    + Div<Output = Self>
+    + Rem<Output = Self>
+    + Send
+    + Sync
 {
     /// The smallest non-NaN floating point value.
     ///
     /// Typically, this is negative infinity.
-    const MIN: Self;
+    fn neg_infinity() -> Self;
 
     /// The largest non-NaN floating point value.
     ///
     /// Typically, this is positive infinity.
-    const MAX: Self;
+    fn infinity() ->Self;
 
     /// Perform a power operation.
     fn pow(&self, exponent: &Self) -> Self;
@@ -200,8 +200,15 @@ Clone
 
 
 impl<NumericTypes: EvalexprNumericTypes<Int = Self>> EvalexprInt<NumericTypes> for i64 {
-    const MIN: Self = Self::MIN;
-    const MAX: Self = Self::MAX;
+    #[inline(always)]
+    fn min_value() -> Self {
+        Self::MIN
+    }
+
+    #[inline(always)]
+    fn max_value() -> Self {
+        Self::MAX
+    }
 
     fn from_usize(int: usize) -> EvalexprResult<Self, NumericTypes> {
         int.try_into()
@@ -323,8 +330,15 @@ impl<NumericTypes: EvalexprNumericTypes<Int = Self>> EvalexprInt<NumericTypes> f
 }
 
 impl<NumericTypes: EvalexprNumericTypes<Float = Self>> EvalexprFloat<NumericTypes> for f64 {
-    const MIN: Self = Self::NEG_INFINITY;
-    const MAX: Self = Self::INFINITY;
+    #[inline(always)]
+    fn infinity() -> Self {
+        Self::INFINITY
+    }
+
+    #[inline(always)]
+    fn neg_infinity() -> Self {
+        Self::NEG_INFINITY
+    }
 
     fn pow(&self, exponent: &Self) -> Self {
         (*self).powf(*exponent)

@@ -18,12 +18,6 @@ PrimInt
 + Send
 + Sync
 {
-    /// The minimum value of the integer type.
-    const MIN: Self;
-
-    /// The maximum value of the integer type.
-    const MAX: Self;
-    
     /// Convert `self` into [`usize`].
     fn into_usize(self) -> EvalexprResult<usize, NumericTypes> {
         num_traits::cast(self).ok_or_else(|| EvalexprError::IntIntoUsize {
@@ -58,16 +52,6 @@ Float
 + Send
 + Sync
 {
-    /// The smallest non-NaN floating point value.
-    ///
-    /// Typically, this is negative infinity.
-    const MIN: Self;
-
-    /// The largest non-NaN floating point value.
-    ///
-    /// Typically, this is positive infinity.
-    const MAX: Self;
-
     /// Returns the absolute value of self.
     fn abs(&self) -> Self;
 
@@ -78,17 +62,11 @@ Float
 }
 
 impl<NumericTypes: EvalexprNumericTypes<Int = Self>> EvalexprInt<NumericTypes> for i64 {
-    const MIN: Self = i64::MIN;
-    const MAX: Self = i64::MAX;
-
     fn abs(&self) -> EvalexprResult<Self, NumericTypes> {
         Ok(i64::abs(*self))
     }
 }
-impl<NumericTypes: EvalexprNumericTypes<Float = Self>> EvalexprFloat<NumericTypes> for f64{
-    const MIN: Self = f64::NEG_INFINITY;
-    const MAX: Self = f64::INFINITY;
-
+impl<NumericTypes: EvalexprNumericTypes<Float = Self>> EvalexprFloat<NumericTypes> for f64 {
     fn abs(&self) -> Self {
         f64::abs(*self)
     }
