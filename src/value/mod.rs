@@ -2,23 +2,13 @@ use crate::error::{EvalexprError, EvalexprResult, EvalexprResultValue};
 use std::{convert::TryFrom, ops::RangeInclusive};
 use self::numeric_types::{DefaultNumericTypes, EvalexprNumericTypes};
 
-#[cfg(feature = "num")]
-use crate::value::num_ext::{
-    EvalexprNumCast,
-    EvalexprNumericTypesWithCopy,
-    EvalexprNumericTypesConvert,
-    EvalexprAsPrimitive
-};
-
 
 #[cfg(feature = "num")]
-pub mod num_ext;
+use numeric_types::with_num::EvalexprNumericTypesConvert;
 
 mod display;
 pub mod numeric_types;
 pub mod value_type;
-
-
 
 /// The type used to represent tuples in `Value::Tuple`.
 pub type TupleType<NumericTypes = DefaultNumericTypes> = Vec<Value<NumericTypes>>;

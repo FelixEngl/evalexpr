@@ -27,12 +27,14 @@ regex = { version = "1.11.1", optional = true }
 serde = { version = "1.0.213", features = ["derive"], optional = true }
 rand = { version = "0.8.5", optional = true }
 num-traits = {version = "0.2.19", optional = true}
+cfg-if = "1.0.0"
 
 [features]
 serde = ["dep:serde"]
 regex = ["dep:regex"]
 rand = ["dep:rand"]
 num = ["dep:num-traits"]
+num_primitive = ["num"]
 
 
 [dev-dependencies]

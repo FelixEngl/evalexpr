@@ -156,8 +156,8 @@
 //! | - | 110 | Negation |
 //! | ! | 110 | Logical not |
 //!
-//! Operators that take numbers as arguments can either take integers or floating point numbers.
-//! If one of the arguments is a floating point number, all others are converted to floating point numbers as well, and the resulting value is a floating point number as well.
+//! Operators that take numeric_types as arguments can either take integers or floating point numeric_types.
+//! If one of the arguments is a floating point number, all others are converted to floating point numeric_types as well, and the resulting value is a floating point number as well.
 //! Otherwise, the result is an integer.
 //! An exception to this is the exponentiation operator that always returns a floating point number.
 //! Example:
@@ -406,7 +406,7 @@
 //! ### Values
 //!
 //! Operators take values as arguments and produce values as results.
-//! Values can be booleans, integer or floating point numbers, strings, tuples or the empty type.
+//! Values can be booleans, integer or floating point numeric_types, strings, tuples or the empty type.
 //! Values are denoted as displayed in the following table.
 //!
 //! | Value type | Example |
@@ -418,7 +418,7 @@
 //! | `Value::Tuple` | `(3, 55.0, false, ())`, `(1, 2)` |
 //! | `Value::Empty` | `()` |
 //!
-//! Integers are internally represented as `i64`, and floating point numbers are represented as `f64`.
+//! Integers are internally represented as `i64`, and floating point numeric_types are represented as `f64`.
 //! Tuples are represented as `Vec<Value>` and empty values are not stored, but represented by Rust's unit type `()` where necessary.
 //!
 //! There exist type aliases for some of the types.
@@ -486,7 +486,7 @@
 //!
 //! Be aware that functions need to verify the types of values that are passed to them.
 //! The `error` module contains some shortcuts for verification, and error types for passing a wrong value type.
-//! Also, most numeric functions need to distinguish between being called with integers or floating point numbers, and act accordingly.
+//! Also, most numeric functions need to distinguish between being called with integers or floating point numeric_types, and act accordingly.
 //!
 //! Here are some examples and counter-examples on expressions that are interpreted as function calls:
 //!
@@ -576,6 +576,8 @@
 #![forbid(unsafe_code)]
 #![allow(clippy::get_first)]
 
+#[cfg(feature = "num")]
+pub use value::numeric_types::with_num::*;
 pub use crate::{
     context::{
         Context, ContextWithMutableFunctions, ContextWithMutableVariables, EmptyContext,
@@ -585,7 +587,7 @@ pub use crate::{
     function::Function,
     interface::*,
     operator::Operator,
-    token::{PartialToken},
+    token::PartialToken,
     tree::Node,
     value::{
         numeric_types::{DefaultNumericTypes, EvalexprFloat, EvalexprInt, EvalexprNumericTypes},
@@ -596,13 +598,8 @@ pub use crate::{
 
 #[cfg(feature = "num")]
 pub use crate::{
-    value::{
-        try_convert,
-        num_ext::*,
-    },
-    context::{
-        ConvertibleContext
-    }
+    context::ConvertibleContext,
+    value::try_convert
 };
 
 mod context;

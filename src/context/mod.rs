@@ -94,13 +94,13 @@ pub trait IterateVariablesContext: Context {
 pub trait ConvertibleContext: Context<NumericTypes=Self::ConvertibleNumericTypes>
 {
     /// the type
-    type ConvertibleNumericTypes: crate::value::num_ext::EvalexprNumericTypesConvert;
+    type ConvertibleNumericTypes: crate::value::numeric_types::with_num::EvalexprNumericTypesConvert;
     
     /// tzry to convert to a 
     fn try_convert_to<C>(&self) -> EvalexprResult<C, Self::ConvertibleNumericTypes>
     where
         C: Default + Context + ContextWithMutableVariables + ContextWithMutableFunctions,
-        <C as Context>::NumericTypes: crate::value::num_ext::EvalexprNumericTypesConvert,
+        <C as Context>::NumericTypes: crate::value::numeric_types::with_num::EvalexprNumericTypesConvert,
     ;
 }
 
@@ -168,14 +168,14 @@ impl<NumericTypes: EvalexprNumericTypes> IterateVariablesContext for EmptyContex
 }
 
 #[cfg(feature = "num")]
-impl<NumericTypes: crate::value::num_ext::EvalexprNumericTypesConvert> ConvertibleContext for EmptyContext<NumericTypes>
+impl<NumericTypes: crate::value::numeric_types::with_num::EvalexprNumericTypesConvert> ConvertibleContext for EmptyContext<NumericTypes>
 {
     type ConvertibleNumericTypes = Self::NumericTypes;
 
     fn try_convert_to<C>(&self) -> EvalexprResult<C, Self::ConvertibleNumericTypes>
     where
         C: Default + Context + ContextWithMutableVariables + ContextWithMutableFunctions,
-        <C as Context>::NumericTypes: crate::value::num_ext::EvalexprNumericTypesConvert,
+        <C as Context>::NumericTypes: crate::value::numeric_types::with_num::EvalexprNumericTypesConvert,
     {
         let mut new = C::default();
         // We do not care if it fails. This is only to make sure that we copy it if necessary. 
@@ -250,14 +250,14 @@ impl<NumericTypes: EvalexprNumericTypes> IterateVariablesContext
 }
 
 #[cfg(feature = "num")]
-impl<NumericTypes: crate::value::num_ext::EvalexprNumericTypesConvert> ConvertibleContext for EmptyContextWithBuiltinFunctions<NumericTypes>
+impl<NumericTypes: crate::value::numeric_types::with_num::EvalexprNumericTypesConvert> ConvertibleContext for EmptyContextWithBuiltinFunctions<NumericTypes>
 {
     type ConvertibleNumericTypes = Self::NumericTypes;
 
     fn try_convert_to<C>(&self) -> EvalexprResult<C, Self::ConvertibleNumericTypes>
     where
         C: Default + Context + ContextWithMutableVariables + ContextWithMutableFunctions,
-        <C as Context>::NumericTypes: crate::value::num_ext::EvalexprNumericTypesConvert,
+        <C as Context>::NumericTypes: crate::value::numeric_types::with_num::EvalexprNumericTypesConvert,
     {
         let mut new = C::default();
         // We do not care if it fails. This is only to make sure that we copy it if necessary. 
@@ -429,14 +429,14 @@ impl<NumericTypes: EvalexprNumericTypes> IterateVariablesContext for HashMapCont
 }
 
 #[cfg(feature = "num")]
-impl<NumericTypes: crate::value::num_ext::EvalexprNumericTypesConvert> ConvertibleContext for HashMapContext<NumericTypes>
+impl<NumericTypes: crate::value::numeric_types::with_num::EvalexprNumericTypesConvert> ConvertibleContext for HashMapContext<NumericTypes>
 {
     type ConvertibleNumericTypes = Self::NumericTypes;
 
     fn try_convert_to<C>(&self) -> EvalexprResult<C, Self::ConvertibleNumericTypes>
     where
         C: Default + Context + ContextWithMutableVariables + ContextWithMutableFunctions,
-        <C as Context>::NumericTypes: crate::value::num_ext::EvalexprNumericTypesConvert,
+        <C as Context>::NumericTypes: crate::value::numeric_types::with_num::EvalexprNumericTypesConvert,
     {
         let mut new = C::default();
         // We do not care if it fails. This is only to make sure that we copy it if necessary. 

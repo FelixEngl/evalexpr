@@ -8,7 +8,7 @@ use crate::{
 mod display;
 
 #[derive(Clone, PartialEq, Debug)]
-pub(crate) enum Token<NumericTypes: EvalexprNumericTypes = DefaultNumericTypes> {
+pub enum Token<NumericTypes: EvalexprNumericTypes = DefaultNumericTypes> {
     // Arithmetic
     Plus,
     Minus,

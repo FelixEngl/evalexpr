@@ -1,3 +1,4 @@
+use crate::{EvalexprError, EvalexprNumericTypes, EvalexprResult, Value};
 use std::{
     convert::TryInto,
     fmt::{Debug, Display},
@@ -5,38 +6,9 @@ use std::{
     str::FromStr,
 };
 
-use crate::{EvalexprError, EvalexprResult, Value};
-
-/// A trait to parameterise `evalexpr` with an int type and a float type.
-///
-/// See [`EvalexprInt`] and [`EvalexprFloat`] for the requirements on the types.
-pub trait EvalexprNumericTypes: 'static + Sized + Debug + Clone + PartialEq + Sync + Send {
-    /// The integer type.
-    #[cfg(feature = "serde")]
-    type Int: EvalexprInt<Self> + serde::Serialize + for<'de> serde::Deserialize<'de>;
-
-    /// The integer type.
-    #[cfg(not(feature = "serde"))]
-    type Int: EvalexprInt<Self>;
-
-    /// The float type.
-    #[cfg(feature = "serde")]
-    type Float: EvalexprFloat<Self> + serde::Serialize + for<'de> serde::Deserialize<'de>;
-
-    /// The float type.
-    #[cfg(not(feature = "serde"))]
-    type Float: EvalexprFloat<Self>;
-
-    /// Convert an integer to a float using the `as` operator or a similar mechanic.
-    fn int_as_float(int: &Self::Int) -> Self::Float;
-
-    /// Convert a float to an integer using the `as` operator or a similar mechanic.
-    fn float_as_int(float: &Self::Float) -> Self::Int;
-}
-
 /// An integer type that can be used by `evalexpr`.
 pub trait EvalexprInt<NumericTypes: EvalexprNumericTypes<Int = Self>>:
-    Clone + Debug + Display + FromStr + Eq + Ord + Send + Sync
+Clone + Debug + Display + FromStr + Eq + Ord + Send + Sync
 {
     /// The minimum value of the integer type.
     const MIN: Self;
@@ -48,8 +20,7 @@ pub trait EvalexprInt<NumericTypes: EvalexprNumericTypes<Int = Self>>:
     fn from_usize(int: usize) -> EvalexprResult<Self, NumericTypes>;
 
     /// Convert `self` into [`usize`].
-    #[expect(clippy::wrong_self_convention)]
-    fn into_usize(&self) -> EvalexprResult<usize, NumericTypes>;
+    fn into_usize(self) -> EvalexprResult<usize, NumericTypes>;
 
     /// Parse `Self` from a hex string.
     #[expect(clippy::result_unit_err)]
@@ -86,31 +57,31 @@ pub trait EvalexprInt<NumericTypes: EvalexprNumericTypes<Int = Self>>:
     fn bitxor(&self, rhs: &Self) -> Self;
 
     /// Perform a bitnot operation.
-    fn bitnot(&self) -> Self;
+    fn not(&self) -> Self;
 
     /// Perform a shl operation.
-    fn bit_shift_left(&self, rhs: &Self) -> Self;
+    fn shl(&self, rhs: &Self) -> Self;
 
     /// Perform a shr operation.
-    fn bit_shift_right(&self, rhs: &Self) -> Self;
+    fn shr(&self, rhs: &Self) -> Self;
 }
 
 /// A float type that can be used by `evalexpr`.
 pub trait EvalexprFloat<NumericTypes: EvalexprNumericTypes<Float = Self>>:
-    Clone
-    + Debug
-    + Display
-    + FromStr
-    + PartialEq
-    + PartialOrd
-    + Add<Output = Self>
-    + Sub<Output = Self>
-    + Neg<Output = Self>
-    + Mul<Output = Self>
-    + Div<Output = Self>
-    + Rem<Output = Self>
-    + Send 
-    + Sync
+Clone
++ Debug
++ Display
++ FromStr
++ PartialEq
++ PartialOrd
++ Add<Output = Self>
++ Sub<Output = Self>
++ Neg<Output = Self>
++ Mul<Output = Self>
++ Div<Output = Self>
++ Rem<Output = Self>
++ Send
++ Sync
 {
     /// The smallest non-NaN floating point value.
     ///
@@ -215,10 +186,10 @@ pub trait EvalexprFloat<NumericTypes: EvalexprNumericTypes<Float = Self>>:
     /// Returns the absolute value of self.
     fn abs(&self) -> Self;
 
-    /// Returns the minimum of the two numbers, ignoring NaN.
+    /// Returns the minimum of the two numeric_types, ignoring NaN.
     fn min(&self, other: &Self) -> Self;
 
-    /// Returns the maximum of the two numbers, ignoring NaN.
+    /// Returns the maximum of the two numeric_types, ignoring NaN.
     fn max(&self, other: &Self) -> Self;
 
     /// Generate a random float value between 0.0 and 1.0.
@@ -227,24 +198,6 @@ pub trait EvalexprFloat<NumericTypes: EvalexprNumericTypes<Float = Self>>:
     fn random() -> EvalexprResult<Self, NumericTypes>;
 }
 
-/// See [`EvalexprNumericTypes`].
-///
-/// This empty struct uses [`i64`] as its integer type and [`f64`] as its float type.
-#[derive(Debug, Clone, Copy, Eq, PartialEq, Ord, PartialOrd, Hash)]
-pub struct DefaultNumericTypes;
-
-impl EvalexprNumericTypes for DefaultNumericTypes {
-    type Int = i64;
-    type Float = f64;
-
-    fn int_as_float(int: &Self::Int) -> Self::Float {
-        *int as Self::Float
-    }
-
-    fn float_as_int(float: &Self::Float) -> Self::Int {
-        *float as Self::Int
-    }
-}
 
 impl<NumericTypes: EvalexprNumericTypes<Int = Self>> EvalexprInt<NumericTypes> for i64 {
     const MIN: Self = Self::MIN;
@@ -255,13 +208,13 @@ impl<NumericTypes: EvalexprNumericTypes<Int = Self>> EvalexprInt<NumericTypes> f
             .map_err(|_| EvalexprError::IntFromUsize { usize_int: int })
     }
 
-    fn into_usize(&self) -> EvalexprResult<usize, NumericTypes> {
-        if *self >= 0 {
-            (*self as u64)
+    fn into_usize(self) -> EvalexprResult<usize, NumericTypes> {
+        if self >= 0 {
+            (self as u64)
                 .try_into()
-                .map_err(|_| EvalexprError::IntIntoUsize { int: *self })
+                .map_err(|_| EvalexprError::IntIntoUsize { int: self })
         } else {
-            Err(EvalexprError::IntIntoUsize { int: *self })
+            Err(EvalexprError::IntIntoUsize { int: self })
         }
     }
 
@@ -356,15 +309,15 @@ impl<NumericTypes: EvalexprNumericTypes<Int = Self>> EvalexprInt<NumericTypes> f
         BitXor::bitxor(*self, *rhs)
     }
 
-    fn bitnot(&self) -> Self {
+    fn not(&self) -> Self {
         Not::not(*self)
     }
 
-    fn bit_shift_left(&self, rhs: &Self) -> Self {
+    fn shl(&self, rhs: &Self) -> Self {
         Shl::shl(*self, *rhs)
     }
 
-    fn bit_shift_right(&self, rhs: &Self) -> Self {
+    fn shr(&self, rhs: &Self) -> Self {
         Shr::shr(*self, *rhs)
     }
 }

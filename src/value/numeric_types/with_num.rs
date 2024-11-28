@@ -1,4 +1,4 @@
-use num_traits::{cast, NumCast};
+use num_traits::{cast};
 pub use num_traits::{
     NumCast as EvalexprNumCast,
     AsPrimitive as EvalexprAsPrimitive,
@@ -56,7 +56,7 @@ pub trait EvalexprNumericTypesIntConvert: EvalexprNumericTypes<Int=<Self as Eval
     fn num_to_int<T: EvalexprNumCast>(num: T) -> Option<Self::Int> {
         cast(num)
     }
-    
+
     /// Converts an int to a number
     fn int_to_num<T: EvalexprNumCast>(int: Self::Int) -> Option<T> {
         cast(int)
@@ -80,7 +80,7 @@ pub trait EvalexprNumericTypesFloatConvert: EvalexprNumericTypes<Float=<Self as 
     /// The float type.
     #[cfg(not(feature = "serde"))]
     type FloatConvert: EvalexprFloat<Self> + EvalexprNumCast;
-    
+
     /// Converts a number to a float
     fn num_to_float<T: EvalexprNumCast>(num: T) -> Option<Self::Float>{
         cast(num)
@@ -104,7 +104,7 @@ where
 /// An extension to `EvalexprNumericTypes` to allow casts in both directions.
 pub trait EvalexprNumericTypesConvert: EvalexprNumericTypesIntConvert + EvalexprNumericTypesFloatConvert {}
 
-impl<T> EvalexprNumericTypesConvert for T 
+impl<T> EvalexprNumericTypesConvert for T
 where
     T: EvalexprNumericTypes,
     T::Int: EvalexprNumCast,

@@ -1,9 +1,21 @@
+use cfg_if::cfg_if;
 use crate::function::builtin::builtin_function;
 
 use crate::value::numeric_types::{
-    DefaultNumericTypes, EvalexprFloat, EvalexprInt, EvalexprNumericTypes,
+    DefaultNumericTypes, EvalexprNumericTypes,
 };
 use crate::{context::Context, error::*, value::Value, ContextWithMutableVariables};
+
+cfg_if! {
+    if #[cfg(feature = "num_primitive")] {
+        use num_traits::*;
+    } else {
+        use crate::value::numeric_types::*;
+    }
+}
+
+#[cfg(feature = "num_primitive")]
+use num_traits::*;
 
 mod display;
 
@@ -206,7 +218,20 @@ impl<NumericTypes: EvalexprNumericTypes> Operator<NumericTypes> {
                     result.push_str(&b);
                     Ok(Value::String(result))
                 } else if let (Ok(a), Ok(b)) = (arguments[0].as_int(), arguments[1].as_int()) {
-                    a.checked_add(&b).map(Value::Int)
+                    cfg_if! {
+                        if #[cfg(feature = "num_primitive")] {
+                            if let Some(value) = a.checked_add(&b) {
+                                Ok(Value::Int(value))
+                            } else {
+                                Err(EvalexprError::addition_error(
+                                    Value::<NumericTypes>::from_int(a),
+                                    Value::<NumericTypes>::from_int(b),
+                                ))
+                            }
+                        } else {
+                            a.checked_add(&b).map(Value::Int)
+                        }
+                    }
                 } else if let (Ok(a), Ok(b)) = (arguments[0].as_number(), arguments[1].as_number())
                 {
                     Ok(Value::Float(a + b))
@@ -222,11 +247,21 @@ impl<NumericTypes: EvalexprNumericTypes> Operator<NumericTypes> {
             },
             Sub => {
                 expect_operator_argument_amount(arguments.len(), 2)?;
-                arguments[0].as_number()?;
-                arguments[1].as_number()?;
-
                 if let (Ok(a), Ok(b)) = (arguments[0].as_int(), arguments[1].as_int()) {
-                    a.checked_sub(&b).map(Value::Int)
+                    cfg_if! {
+                        if #[cfg(feature = "num_primitive")] {
+                            if let Some(value) = a.checked_sub(&b) {
+                                Ok(Value::Int(value))
+                            } else {
+                                Err(EvalexprError::subtraction_error(
+                                    Value::<NumericTypes>::from_int(a),
+                                    Value::<NumericTypes>::from_int(b),
+                                ))
+                            }
+                        } else {
+                            a.checked_sub(&b).map(Value::Int)
+                        }
+                    }
                 } else {
                     Ok(Value::Float(
                         arguments[0].as_number()? - arguments[1].as_number()?,
@@ -235,21 +270,41 @@ impl<NumericTypes: EvalexprNumericTypes> Operator<NumericTypes> {
             },
             Neg => {
                 expect_operator_argument_amount(arguments.len(), 1)?;
-                arguments[0].as_number()?;
-
                 if let Ok(a) = arguments[0].as_int() {
-                    a.checked_neg().map(Value::Int)
+                    cfg_if! {
+                        if #[cfg(feature = "num_primitive")] {
+                            if let Some(value) = a.checked_neg() {
+                                Ok(Value::Int(value))
+                            } else {
+                                Err(EvalexprError::negation_error(
+                                    Value::<NumericTypes>::from_int(a)
+                                ))
+                            }
+                        } else {
+                            a.checked_neg().map(Value::Int)
+                        }
+                    }
                 } else {
                     Ok(Value::Float(-arguments[0].as_number()?))
                 }
             },
             Mul => {
                 expect_operator_argument_amount(arguments.len(), 2)?;
-                arguments[0].as_number()?;
-                arguments[1].as_number()?;
-
                 if let (Ok(a), Ok(b)) = (arguments[0].as_int(), arguments[1].as_int()) {
-                    a.checked_mul(&b).map(Value::Int)
+                    cfg_if! {
+                        if #[cfg(feature = "num_primitive")] {
+                            if let Some(value) = a.checked_mul(&b) {
+                                Ok(Value::Int(value))
+                            } else {
+                                Err(EvalexprError::multiplication_error(
+                                    Value::<NumericTypes>::from_int(a),
+                                    Value::<NumericTypes>::from_int(b),
+                                ))
+                            }
+                        } else {
+                            a.checked_mul(&b).map(Value::Int)
+                        }
+                    }
                 } else {
                     Ok(Value::Float(
                         arguments[0].as_number()? * arguments[1].as_number()?,
@@ -258,11 +313,21 @@ impl<NumericTypes: EvalexprNumericTypes> Operator<NumericTypes> {
             },
             Div => {
                 expect_operator_argument_amount(arguments.len(), 2)?;
-                arguments[0].as_number()?;
-                arguments[1].as_number()?;
-
                 if let (Ok(a), Ok(b)) = (arguments[0].as_int(), arguments[1].as_int()) {
-                    a.checked_div(&b).map(Value::Int)
+                    cfg_if! {
+                        if #[cfg(feature = "num_primitive")] {
+                            if let Some(value) = a.checked_div(&b) {
+                                Ok(Value::Int(value))
+                            } else {
+                                Err(EvalexprError::division_error(
+                                    Value::<NumericTypes>::from_int(a),
+                                    Value::<NumericTypes>::from_int(b),
+                                ))
+                            }
+                        } else {
+                            a.checked_div(&b).map(Value::Int)
+                        }
+                    }
                 } else {
                     Ok(Value::Float(
                         arguments[0].as_number()? / arguments[1].as_number()?,
@@ -275,7 +340,20 @@ impl<NumericTypes: EvalexprNumericTypes> Operator<NumericTypes> {
                 arguments[1].as_number()?;
 
                 if let (Ok(a), Ok(b)) = (arguments[0].as_int(), arguments[1].as_int()) {
-                    a.checked_rem(&b).map(Value::Int)
+                    cfg_if! {
+                        if #[cfg(feature = "num_primitive")] {
+                            if let Some(value) = a.checked_rem(&b) {
+                                Ok(Value::Int(value))
+                            } else {
+                                Err(EvalexprError::modulation_error(
+                                    Value::<NumericTypes>::from_int(a),
+                                    Value::<NumericTypes>::from_int(b),
+                                ))
+                            }
+                        } else {
+                            a.checked_rem(&b).map(Value::Int)
+                        }
+                    }
                 } else {
                     Ok(Value::Float(
                         arguments[0].as_number()? % arguments[1].as_number()?,
@@ -284,12 +362,17 @@ impl<NumericTypes: EvalexprNumericTypes> Operator<NumericTypes> {
             },
             Exp => {
                 expect_operator_argument_amount(arguments.len(), 2)?;
-                arguments[0].as_number()?;
-                arguments[1].as_number()?;
-
-                Ok(Value::Float(
-                    arguments[0].as_number()?.pow(&arguments[1].as_number()?),
-                ))
+                cfg_if! {
+                    if #[cfg(feature = "num_primitive")] {
+                        Ok(Value::Float(
+                            arguments[0].as_number()?.pow(arguments[1].as_number()?)
+                        ))
+                    } else {
+                        Ok(Value::Float(
+                            arguments[0].as_number()?.pow(&arguments[1].as_number()?)
+                        ))
+                    }
+                }
             },
             Eq => {
                 expect_operator_argument_amount(arguments.len(), 2)?;
@@ -463,14 +546,14 @@ impl<NumericTypes: EvalexprNumericTypes> Operator<NumericTypes> {
                 let arguments = vec![left_value, arguments[1].clone()];
 
                 let result = match self {
-                    AddAssign => Operator::Add.eval(&arguments, context),
-                    SubAssign => Operator::Sub.eval(&arguments, context),
-                    MulAssign => Operator::Mul.eval(&arguments, context),
-                    DivAssign => Operator::Div.eval(&arguments, context),
-                    ModAssign => Operator::Mod.eval(&arguments, context),
-                    ExpAssign => Operator::Exp.eval(&arguments, context),
-                    AndAssign => Operator::And.eval(&arguments, context),
-                    OrAssign => Operator::Or.eval(&arguments, context),
+                    AddAssign => Add.eval(&arguments, context),
+                    SubAssign => Sub.eval(&arguments, context),
+                    MulAssign => Mul.eval(&arguments, context),
+                    DivAssign => Div.eval(&arguments, context),
+                    ModAssign => Mod.eval(&arguments, context),
+                    ExpAssign => Exp.eval(&arguments, context),
+                    AndAssign => And.eval(&arguments, context),
+                    OrAssign => Or.eval(&arguments, context),
                     _ => unreachable!(
                         "Forgot to add a match arm for an assign operation: {}",
                         self

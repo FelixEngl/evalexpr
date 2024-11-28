@@ -1625,7 +1625,7 @@ fn test_operator_assignments() {
 
 #[test]
 fn test_type_errors_in_binary_operators() {
-    // Only addition supports incompatible types, all others work only on numbers or only on booleans.
+    // Only addition supports incompatible types, all others work only on numeric_types or only on booleans.
     // So only addition requires the more fancy error message.
     assert_eq!(
         eval("4 + \"abc\""),
