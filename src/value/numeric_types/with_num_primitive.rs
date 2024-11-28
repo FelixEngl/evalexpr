@@ -1,8 +1,7 @@
 use std::fmt::{Debug, Display};
 use std::ops::{Shl, Shr};
 use std::str::FromStr;
-use cfg_if::cfg_if;
-use num_traits::{CheckedNeg, CheckedRem, Float, Pow, PrimInt};
+use num_traits::{CheckedNeg, CheckedRem, Float, Pow, PrimInt, Signed};
 use crate::{EvalexprError, EvalexprNumericTypes, EvalexprResult};
 
 /// An integer type that can be used by `evalexpr`.
@@ -61,23 +60,64 @@ Float
     fn random() -> EvalexprResult<Self, NumericTypes>;
 }
 
-impl<NumericTypes: EvalexprNumericTypes<Int = Self>> EvalexprInt<NumericTypes> for i64 {
-    fn abs(&self) -> EvalexprResult<Self, NumericTypes> {
-        Ok(i64::abs(*self))
-    }
-}
-impl<NumericTypes: EvalexprNumericTypes<Float = Self>> EvalexprFloat<NumericTypes> for f64 {
-    fn abs(&self) -> Self {
-        f64::abs(*self)
-    }
 
-    fn random() -> EvalexprResult<Self, NumericTypes> {
-        cfg_if! {
-            if #[cfg(feature = "rand")] {
-                Ok(rand::random())
-            } else {
-                Err(EvalexprError::RandNotEnabled)
+
+
+
+macro_rules! impl_defaults {
+    (unsigned: $($ty:ident),+ $(,)?) => {
+        $(
+        impl<NumericTypes: EvalexprNumericTypes<Int = $ty>> EvalexprInt<NumericTypes> for $ty
+        {
+            fn abs(&self) -> EvalexprResult<Self, NumericTypes> {
+                Ok(*self)
             }
         }
-    }
+        )+
+    };
+    (signed: $($ty:ident),+ $(,)?) => {
+        $(
+        impl<NumericTypes: EvalexprNumericTypes<Int = $ty>> EvalexprInt<NumericTypes> for $ty
+        {
+            fn abs(&self) -> EvalexprResult<Self, NumericTypes> {
+                Ok($ty::abs(*self))
+            }
+        }
+        )+
+    };
+    (float: $($ty:ident),+ $(,)?) => {
+        $(
+        impl<NumericTypes: EvalexprNumericTypes<Float = $ty>> EvalexprFloat<NumericTypes> for $ty
+        {
+            fn abs(&self) -> Self {
+                Signed::abs(self)
+            }
+         
+            fn random() -> EvalexprResult<Self, NumericTypes> {
+                cfg_if::cfg_if! {
+                    if #[cfg(feature = "rand")] {
+                        Ok(rand::random())
+                    } else {
+                        Err(EvalexprError::RandNotEnabled)
+                    }
+                }
+            }
+        }
+        )+
+    };
+    ($($tt:tt: $($ty:ident),+;)+) => {
+        $(
+        impl_defaults!($tt: $($ty),+);
+        )+
+    };
 }
+
+impl_defaults! {
+    float: f64, f32;
+    signed: i8, i16, i32, i64, i128, isize;
+    unsigned: u8, u16, u32, u64, u128, usize;
+}
+
+
+
+

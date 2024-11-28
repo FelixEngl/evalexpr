@@ -150,12 +150,16 @@ pub fn builtin_function<NumericTypes: EvalexprNumericTypes>(
         "math::is_normal" => float_is(NumericTypes::Float::is_normal),
         // Absolute value
         "math::abs" => Some(Function::new(|argument| match argument {
-            Value::Float(num) => Ok(Value::Float(
-                <<NumericTypes as EvalexprNumericTypes>::Float as EvalexprFloat<NumericTypes>>::abs(num)
-            )),
-            Value::Int(num) => Ok(Value::Int(
-                <<NumericTypes as EvalexprNumericTypes>::Int as EvalexprInt<NumericTypes>>::abs(num)?
-            )),
+            Value::Float(num) => {
+                Ok(Value::Float(
+                    <<NumericTypes as EvalexprNumericTypes>::Float as EvalexprFloat<NumericTypes>>::abs(num)
+                ))
+            },
+            Value::Int(num) => {
+                Ok(Value::Int(
+                    <<NumericTypes as EvalexprNumericTypes>::Int as EvalexprInt<NumericTypes>>::abs(num)?
+                ))
+            },
             _ => Err(EvalexprError::expected_number(argument.clone())),
         })),
         // Other
