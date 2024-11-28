@@ -602,6 +602,12 @@ pub use crate::{
     value::try_convert
 };
 
+/// The exports needed for num
+#[cfg(feature = "num")]
+pub mod export {
+    pub use num_traits as evalexpr_num;
+}
+
 mod context;
 pub mod error;
 #[cfg(feature = "serde")]
